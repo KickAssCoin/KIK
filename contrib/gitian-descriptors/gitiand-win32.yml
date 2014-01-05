@@ -6,8 +6,6 @@ architectures:
 - "amd64"
 packages:
 - "mingw32"
-- "g++-mingw32"
-- "gcc-mingw32"
 - "git-core"
 - "unzip"
 - "nsis"
