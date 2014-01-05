@@ -2,11 +2,12 @@
 # Distributed under the MIT/X11 software license, see the accompanying
 # file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
-DEPSDIR:=/usr/i686-mingw32msvc
+DEPSDIR:=/usr/i586-mingw32msvc
 
 USE_UPNP:=0
 
 INCLUDEPATHS= \
+ -I"/home/ubuntu/staging" \
  -I"$(DEPSDIR)/boost_1_54_0" \
  -I"$(DEPSDIR)/db-4.8.30.NC/build_unix" \
  -I"$(DEPSDIR)/openssl-1.0.1b/include" \
@@ -81,18 +82,18 @@ version.cpp: obj/build.h
 DEFS += -DHAVE_BUILD_INFO
 
 obj/%.o: %.cpp $(HEADERS)
-	i686-mingw32msvc-g++ -c $(CFLAGS) -o $@ $<
+	i586-mingw32msvc-g++ -c $(CFLAGS) -o $@ $<
 
 kickasscoind.exe: $(OBJS:obj/%=obj/%)
-	i686-mingw32msvc-g++ $(CFLAGS) -o $@ $(LIBPATHS) $^ $(LIBS)
+	i586-mingw32msvc-g++ $(CFLAGS) -o $@ $(LIBPATHS) $^ $(LIBS)
 
 TESTOBJS := $(patsubst test/%.cpp,obj-test/%.o,$(wildcard test/*.cpp))
 
 obj-test/%.o: test/%.cpp $(HEADERS)
-	i686-mingw32msvc-g++ -c $(TESTDEFS) $(CFLAGS) -o $@ $<
+	i586-mingw32msvc-g++ -c $(TESTDEFS) $(CFLAGS) -o $@ $<
 
 test_kickasscoin.exe: $(TESTOBJS) $(filter-out obj/init.o,$(OBJS:obj/%=obj/%))
-	i686-mingw32msvc-g++ $(CFLAGS) -o $@ $(LIBPATHS) $^ -lboost_unit_test_framework $(LIBS)
+	i586-mingw32msvc-g++ $(CFLAGS) -o $@ $(LIBPATHS) $^ -lboost_unit_test_framework $(LIBS)
 
 
 clean:

@@ -7,6 +7,8 @@ DEPSDIR:=/usr/i586-mingw32msvc
 USE_UPNP:=0
 
 INCLUDEPATHS= \
+ -I"/home/ubuntu/staging" \
+ -I"/home/ubuntu/staging/boost_1_54_0" \
  -I"$(DEPSDIR)/boost_1_54_0" \
  -I"$(DEPSDIR)/db-4.8.30.NC/build_unix" \
  -I"$(DEPSDIR)/openssl-1.0.1b/include" \
