@@ -11,6 +11,8 @@ packages:
 - "unzip"
 - "nsis"
 - "faketime"
+- "mingw32-binutils"
+- "mingw32-runtime"
 reference_datetime: "2011-01-30 00:00:00"
 remotes:
 - "url": "https://github.com/KickAssCoin/KIK.git"
