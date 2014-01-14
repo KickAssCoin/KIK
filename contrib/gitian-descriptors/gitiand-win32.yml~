@@ -1,51 +1,71 @@
 ---
 name: "kickasscoin"
 suites:
-- "precise"
+- "lucid"
 architectures:
-- "amd64"
-packages:
-- "mingw-w64"
-- "g++-mingw-w64"
+- "i386"
+packages: 
+- "mingw32"
 - "git-core"
 - "unzip"
 - "nsis"
 - "faketime"
-- "mingw32-binutils"
-- "mingw32-runtime"
-reference_datetime: "2011-01-30 00:00:00"
+reference_datetime: "2014-01-01 00:00:00"
 remotes:
 - "url": "https://github.com/KickAssCoin/KIK.git"
   "dir": "kickasscoin"
 files:
-- "qt-win32-4.8.3-gitian-r4.zip"
+- "qt-win32-4.7.4-gitian.zip"
 - "boost-win32-1.54.0-gitian-r6.zip"
-- "bitcoin-deps-win32-gitian-r9.zip"
+- "kickasscoin-deps-0.0.4.zip"
 script: |
   #
-  STAGING=$HOME/staging
-  HOST=i686-w64-mingw32
-  #
-  mkdir -p $STAGING
-  cd $STAGING
-  unzip ../build/qt-win32-4.8.3-gitian-r4.zip
-  unzip ../build/boost-win32-1.54.0-gitian-r6.zip
-  unzip ../build/bitcoin-deps-win32-gitian-r9.zip
+  mkdir $HOME/qt
+  cd $HOME/qt
+  unzip ../build/qt-win32-4.7.4-gitian.zip
   cd $HOME/build/
+  export PATH=$PATH:$HOME/qt/bin/
+  #
+  mkdir boost_1_54_0
+  cd boost_1_54_0
+  mkdir -p stage/lib
+  unzip ../boost-win32-1.54.0-gitian-r6.zip
+
+  mv include/boost .
+  cd ..
+  #
+  unzip kickasscoin-deps-0.0.4.zip
+  #
+  find -type f | xargs touch --date="$REFERENCE_DATETIME"
   #
   cd kickasscoin
-  export PATH=$STAGING/host/bin:$PATH
   mkdir -p $OUTDIR/src
   git archive HEAD | tar -x -C $OUTDIR/src
   cp $OUTDIR/src/doc/README_windows.txt $OUTDIR/readme.txt
-  cp $OUTDIR/src/COPYING $OUTDIR/COPYING.txt
-
+  cp $OUTDIR/src/COPYING $OUTDIR/license.txt
+  export LD_PRELOAD=/usr/lib/faketime/libfaketime.so.1
+  export FAKETIME=$REFERENCE_DATETIME
+  export TZ=UTC
+  $HOME/qt/src/bin/qmake -spec unsupported/win32-g++-cross MINIUPNPC_LIB_PATH=$HOME/build/miniupnpc MINIUPNPC_INCLUDE_PATH=$HOME/build/ BDB_LIB_PATH=$HOME/build/db-4.8.30.NC/build_unix BDB_INCLUDE_PATH=$HOME/build/db-4.8.30.NC/build_unix BOOST_LIB_PATH=$HOME/build/boost_1_54_0/stage/lib BOOST_INCLUDE_PATH=$HOME/build/boost_1_54_0 BOOST_LIB_SUFFIX=-mt-s BOOST_THREAD_LIB_SUFFIX=_win32-mt-s OPENSSL_LIB_PATH=$HOME/build/openssl-1.0.1b OPENSSL_INCLUDE_PATH=$HOME/build/openssl-1.0.1b/include QRENCODE_LIB_PATH=$HOME/build/qrencode-3.2.0/.libs QRENCODE_INCLUDE_PATH=$HOME/build/qrencode-3.2.0 USE_QRCODE=1 INCLUDEPATH=$HOME/build DEFINES=BOOST_THREAD_USE_LIB BITCOIN_NEED_QT_PLUGINS=1 QMAKE_LRELEASE=lrelease QMAKE_CXXFLAGS=-frandom-seed=bitcoin QMAKE_LFLAGS=-frandom-seed=bitcoin USE_BUILD_INFO=1
+  make clean
+  make $MAKEOPTS
+  i586-mingw32msvc-strip release/kickasscoin-qt.exe
+  cp release/kickasscoin-qt.exe $OUTDIR/
+  #
   cd src
   export LD_PRELOAD=/usr/lib/faketime/libfaketime.so.1
   export FAKETIME=$REFERENCE_DATETIME
   export TZ=UTC
-  make -f makefile.linux-mingw $MAKEOPTS DEPSDIR=$STAGING kickasscoind.exe USE_UPNP=0 DEBUGFLAGS="-frandom-seed=kickasscoin" USE_SSE2=1
-  $HOST-strip kickasscoind.exe
+  make -f makefile.linux-mingw $MAKEOPTS DEPSDIR=$HOME/build kickasscoind.exe USE_UPNP=0 DEBUGFLAGS="-frandom-seed=kickasscoin"
+  i586-mingw32msvc-strip kickasscoind.exe
   mkdir $OUTDIR/daemon
   cp kickasscoind.exe $OUTDIR/daemon
-
+  cd ..
+  mkdir nsis
+  git archive HEAD | tar -x -C nsis
+  cd nsis/src
+  mkdir ../release
+  cp ../../release/* ../release/
+  cp ../../src/*.exe .
+  makensis ../share/setup.nsi
+  cp ../share/kickasscoin-*-win32-setup.exe $OUTDIR/
